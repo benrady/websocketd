@@ -1,0 +1,4 @@
+#!/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+exec 2>&1
+exec logger -t websocketd

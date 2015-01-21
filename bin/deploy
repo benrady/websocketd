@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+root_dir=`dirname $0`/..
+
+function add_environment() {
+  local env_name=$1
+  echo "Adding deployment environment"
+  echo
+  echo "What is the name of the server(s)? [separated by spaces]"
+  read new_servers
+  echo
+  echo "$new_servers" >> $root_dir/.deploy_$env_name
+  git add $root_dir/.deploy_$env_name
+  git commit -m "Added $env_name deployment environment"
+}
+
+target=${1-"test"}
+commit=${2}
+if [[ ! -e $root_dir/.deploy_$target ]]; then
+  add_environment $target
+fi
+servers=`cat $root_dir/.deploy_$target`
+
+for server in $servers; do
+  repo_url=`git config remote.origin.url`
+  if [[ -z "$repo_url" ]]; then
+    echo "You must push to (at least once) origin before running this script"
+    exit 1
+  fi
+  remote_deploy_url=$server:git/`basename $repo_url`
+
+  echo "Deploying to $remote_deploy_url"
+  if [[ -n $commit || ! -n $(git status --porcelain) ]]; then
+    git push $remote_deploy_url ${commit}master
+  else
+    git status
+  fi
+done

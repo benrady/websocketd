@@ -1,0 +1,4 @@
+#!/bin/bash
+mkdir -p routes
+exec 2>&1
+exec ./websocketd --devconsole --port 8000 --dir=routes
